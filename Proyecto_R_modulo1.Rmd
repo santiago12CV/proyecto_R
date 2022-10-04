@@ -1,0 +1,6 @@
+---
+title: "Proyecto_R"
+author: "Duvan Castro - Miguel Malagon"
+date: '2022-10-04'
+output: html_document
+---
