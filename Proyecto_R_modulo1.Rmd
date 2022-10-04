@@ -2,9 +2,120 @@
 title: "Proyecto_R"
 author: "Duvan Castro - Miguel Malagon"
 date: '2022-10-04'
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
-```{r}
-read.csv(file.choose())
+
+# Introducción
+
+El presente documento contiene el desarrollo del parcial de R de econometría básica para el modelo 1. El lector debe tener en cuenta que para revisar cada punto necesita las siguientes bases de datos en Excel adjuntas con este documento, debe importarlas de acuerdo a como se le vayan indicando en cada sección.
+
+- datos_pib
+- cervezas
+- otros
+
+### Librerias Necesarias 
+
+Antes de empezar a correr cada sección de código le recomendamos instalar las siguientes librerías 
+
+```{r,warning=FALSE}
+library(readxl)
+library(dplyr)
+library(tidyverse)
 ```
 
+
+# Programación General 
+
+## Cálculo del GINI
+
+Para el desarrollo del índice de GINI, vamos a utilizar la base de datos (datos_pib) que contiene datos de la población y PIB por departamento.
+
+importar base de datos
+
+```{r}
+# Seleccione el archivo adjunto con el nombre datos_pib
+datos_gini <- read_excel(file.choose())
+```
+
+Una vez se tengan los datos ya importados vamos a ordenarlos por PIB_Percapita de menor a mayor
+
+```{r}
+datos_gini2 <- datos_gini[order(datos_gini$PIB_percapita),]
+```
+
+Para el cálculo del GINI vamos a utilizar la siguiente formula:
+
+$$
+GINI=1-\sum_{i=1}^{n}(Y_{i-1}+Y_{i})*(N_{i}-N_{i-1})\\
+\mbox{con} \quad Y_{i}= PIB,\quad N_{i}=Población
+
+$$
+Para la en calculo del GINI no se utilizan los datos directos, se utilizan las frecuencias relativas acumuladas, por lo que procederemos a calcularlas.
+
+```{r}
+
+# cálculo de frecuencias relativas
+
+datos_gini3 <-as.matrix(cbind(datos_gini2[,-1],pro_poblacion=prop.table(datos_gini2$POBLACION),pro_pib=prop.table(datos_gini2$PIB),frec_acum_pobla=NA,frec_acum_PIB=NA))
+
+# Cálculo de frecuencias acumuladas 
+datos_gini3[1,"frec_acum_pobla"] <- datos_gini3[1,"pro_poblacion"]
+datos_gini3[1,"frec_acum_PIB"]<-datos_gini3[1,"pro_pib"]
+
+for (i in 2:nrow(datos_gini3)) { 
+  datos_gini3[i,"frec_acum_pobla"]<-datos_gini3[i,"pro_poblacion"]+datos_gini3[i-1,"frec_acum_pobla"]
+  
+  datos_gini3[i,"frec_acum_PIB"] <- datos_gini3[i,"pro_pib"]+datos_gini3[i-1,"frec_acum_PIB"]
+}
+
+head(datos_gini3)
+```
+
+Una vez calculas las frecuencias relativas, vamos a crear una columna en donde se presente el producto entre Y y N para luego sumarlas, tal y como se presentó en la formula anterior.
+
+```{r}
+# Creamos una columna para agregar el producto del GINI 
+
+datos_gini3 <- cbind(datos_gini3,prod_POB_PIB=NA)
+datos_gini3[1,"prod_POB_PIB"] <- datos_gini3[1,"frec_acum_pobla"]*datos_gini3[1,"frec_acum_PIB"]
+
+#Vamos a llenar la columna del de prod_POB_PIB
+
+for (i in 2:nrow(datos_gini3)) {
+  datos_gini3[i,"prod_POB_PIB"] <- (datos_gini3[i,"frec_acum_pobla"]-datos_gini3[i-1,"frec_acum_pobla"])*
+                                  (datos_gini3[i,"frec_acum_PIB"]+datos_gini3[i-1,"frec_acum_PIB"])
+}
+
+```
+
+
+Calculamos el GINI
+
+```{r}
+GINI <- 1-sum(datos_gini3[,"prod_POB_PIB"])
+GINI
+```
+## Estadistica descriptiva 
+
+```{r}
+# Media del PIB y la población  por departamento
+
+media_PIB <- sum(datos_gini2$PIB)/nrow(datos_gini2)
+media_POBLACION <- sum(datos_gini2$POBLACION)/nrow(datos_gini2)
+var_PIB <- sum((datos_gini2$PIB-media_PIB)^2)/(nrow(datos_gini2)-1)
+var_POB <- sum((datos_gini2$POBLACION-media_POBLACION)^2)/(nrow(datos_gini2)-1)
+SD_PIB <- sqrt(var_PIB)
+SD_POB <- sqrt(var_POB)
+
+estd_descrp <- rbind(media_PIB,media_POBLACION,var_PIB,var_POB,SD_PIB,SD_POB)
+estd_descrp
+```
+
+
+# Simulación regresión simple
+
+
+
+# Regresión Múltiple
