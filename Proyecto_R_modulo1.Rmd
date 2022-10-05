@@ -87,7 +87,7 @@ for (i in 2:nrow(datos_gini3)) {
   datos_gini3[i,"prod_POB_PIB"] <- (datos_gini3[i,"frec_acum_pobla"]-datos_gini3[i-1,"frec_acum_pobla"])*
                                   (datos_gini3[i,"frec_acum_PIB"]+datos_gini3[i-1,"frec_acum_PIB"])
 }
-
+head(datos_gini3)
 ```
 
 
@@ -112,7 +112,12 @@ SD_POB <- sqrt(var_POB)
 estd_descrp <- rbind(media_PIB,media_POBLACION,var_PIB,var_POB,SD_PIB,SD_POB)
 estd_descrp
 ```
-
+Haremos un boxplot de los ingresos al igual que un histograma para enriquecer el analisis
+```{r}
+PIB <-c(datos_gini3[,2])
+boxplot(PIB, horizontal = TRUE,main= "PIB COLOMBIA DEPARTAMENTAL")
+hist(PIB)
+```
 
 # Simulación regresión simple
 
@@ -150,9 +155,9 @@ yi <- 5*xi + e
 #Mostramos los seis primeros datos.
 head(yi)
 ```
-Ahora, ya teniendo todos los datos anteriores generaremos 1000 el mismo proceso calculando en cada uno de las veces cuatro diferentes estimadores para la pendiente:
+Ahora, ya teniendo todos los datos anteriores repetiremos 1000 el mismo proceso calculando en cada una de las repeticiones cuatro diferentes estimadores para la pendiente:
 
-Para hacer este proceso mil veces utilizaremos un FOR el cual cambie el número de semilla desde 1 hasta 100, calculando cada vez los cuatro estimadores. Necesitaremos que dichos resultados encontrados sean insertados en un vector diferente para cada estimador, por ello, procedemos a crear dichos vectores y una tabla/matriz donde agruparlos.
+Para hacer este proceso mil veces utilizaremos un FOR el cual cambie el número de semilla desde 1 hasta 1000, calculando cada vez los cuatro estimadores. Necesitaremos que dichos resultados encontrados sean insertados en un vector diferente para cada estimador, por ello, procedemos a crear dichos vectores y una tabla/matriz donde agruparlos.
 
 
 ```{r}
@@ -168,7 +173,7 @@ B_beta_u <- c()
 B_beta_2mco <- c()
 ```
 
-Una vez hecho esto, procederemos a crear el loop que llene dichos vectores con los resultados encontrados para cada diferente semilla, calculados para cada estimador y reagrupandolos en la tabla.
+Una vez hecho esto, procederemos a crear el loop que llene dichos vectores con los resultados encontrados para cada diferente semilla, calculados para cada estimador y reagrupándolos en la tabla.
 
 ```{r}
 for (j in 1:1000){
@@ -210,22 +215,22 @@ hist(B_beta_2mco)
 ```
 Según lo observado en los histogramas se cree que el mejor estimador puede estar entre el beta c) o el d) planteando la siguiente hipotesis:
 
-FALTA LA HIPOTESIS FORMULADA
+FALTA LA HIPOTESIS FORMULADA!!!!!!!!!!!!!!!
 
-Para confirmar cual de los dos muestra las características de insesgamiento y eficiencia relativa buscaremos su varianza  y cual de ellos mediante el estimador de la media logra estimar de mejor manera y más acertada el parámetro poblacional, que en este caso es 5, cumpliendo con el insesgamiento.
+Para confirmar cual de los dos muestra las características de insesgamiento y eficiencia relativa buscaremos su varianza y cual de ellos mediante el estimador de la media logra estimar de mejor manera y más acertada el parámetro poblacional, que en este caso es 5.
 
 ```{r}
 #Medias del estimador c) y d) respectivamente.
 meanB_beta_u <-  mean(B_beta_u)
 meanB_beta_2mco <- mean(B_beta_2mco)
-MEDIAS <- cbind(meanB_beta_u,meanB_beta_2mco)
-rownames(MEDIAS) <- c("media")
+MEDIAS <- rbind(meanB_beta_u,meanB_beta_2mco)
+colnames(MEDIAS) <- c("media")
 
 #Varianza de los estimadores c) y d) respectivamente.
 var_betau <- sum((B_beta_u-meanB_beta_u)^2)/(N-1)
 var_betamco2 <- sum((B_beta_2mco-meanB_beta_2mco)^2)/(N-1)
-VARIANZAS <- cbind(var_betau,var_betamco2)
-rownames(VARIANZAS) <- c("varianza")
+VARIANZAS <- rbind(var_betau,var_betamco2)
+colnames(VARIANZAS) <- c("varianza")
 MEDIAS
 VARIANZAS
 ```
