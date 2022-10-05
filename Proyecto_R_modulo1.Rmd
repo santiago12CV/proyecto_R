@@ -3,8 +3,8 @@ title: "Proyecto_R"
 author: "Duvan Castro - Miguel Malagon"
 date: '2022-10-04'
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 # Introducción
@@ -38,7 +38,6 @@ importar base de datos
 # Seleccione el archivo adjunto con el nombre datos_pib
 datos_gini <- read_excel(file.choose())
 ```
-
 Una vez se tengan los datos ya importados vamos a ordenarlos por PIB_Percapita de menor a mayor
 
 ```{r}
@@ -118,7 +117,10 @@ PIB <-c(datos_gini3[,2])
 boxplot(PIB, horizontal = TRUE,main= "PIB COLOMBIA DEPARTAMENTAL")
 hist(PIB)
 ```
-
+Análisis:
+Teniendo en cuenta la estadística descriptiva en conjunto con el boxplot y el histograma, hablando principalmente  del PIB por departamentos de Colombia, podemos concluir que al observar detenidamente el boxplot y su concentración de los datos en el la caja al igual que la presencia de datos atípicos en los bigotes de la misma, logran ejemplificar de manera acertada el comportamiento de los datos al tenes un variación alta y con una magnitud en su desviación estándar de  *4.389530e+04* el cual indica que hay varios datos los cuales se posicionan en los extremos de la distribución alejándose notoriamente de la media, cosa que se evidencia de igual manera en el histograma donde los datos se agrupan en la parte izquierda del gráfico (lugar donde se ubican los menores datos reportados) y descienden de manera abrupta al avanzar a un mayor magnitud del PIB. 
+No es ninguna sorpresa el hecho de que la concentración de riqueza en Colombia se comporte de dicha manera donde la mayoría de departamentos cuentan con la menor concentración de PIB y la
+mayor concentración se sitúa en pocos departamentos ya que, lamentablemente en Colombia la desigualdad es una de las mayores problemáticas vividas en toda su historia dado, por diversos factores. 
 # Simulación regresión simple
 
 Generar valores aleatorios de perturbaciones que obedezcan una distribución normal:
@@ -134,7 +136,7 @@ e <- rnorm(n=N, mean=0, sd=0.5)
 head(e)
 ```
 
-Generaremos valores aleatorios de una variable aleatoria que se distribuya uniforme entre 0 y 10 NOTA:el parámetro que define el número de observaciones ya está definido como N
+Generaremos valores aleatorios de una variable aleatoria que se distribuya uniforme entre 0 y 10 *NOTA:el parámetro que define el número de observaciones ya está definido como N*
 
 ```{r}
 #Definir semilla utilizada.
@@ -156,7 +158,7 @@ yi <- 5*xi + e
 #Mostramos los seis primeros datos.
 head(yi)
 ```
-Ahora, ya teniendo todos los datos anteriores repetiremos 1000 el mismo proceso calculando en cada una de las repeticiones cuatro diferentes estimadores para la pendiente:
+Ahora, ya teniendo todos los datos anteriores repetiremos 1000 el mismo proceso calculando en cada una de las repeticiones cuatro diferentes estimadores para la pendiente NOTA: la formula de dichos estimadores se encuentra en el documento Parcial entregado.
 
 Para hacer este proceso mil veces utilizaremos un FOR el cual cambie el número de semilla desde 1 hasta 1000, calculando cada vez los cuatro estimadores. Necesitaremos que dichos resultados encontrados sean insertados en un vector diferente para cada estimador, por ello, procedemos a crear dichos vectores y una tabla/matriz donde agruparlos.
 
@@ -214,28 +216,40 @@ hist(B_beta_v)
 hist(B_beta_u)
 hist(B_beta_2mco)
 ```
-Según lo observado en los histogramas se cree que el mejor estimador puede estar entre el beta c) o el d) planteando la siguiente hipotesis:
+Según lo observado en los histogramas se puede crear la hipotesis de que hallan 2 o más estimadores los cuales cumplan con la propiedad de insesgamiento, sin embargo, debemos evaluar cuales son y si son más de uno cual es el mejor estimador de los 4 por medio de la evaluación de la varianza.
 
-FALTA LA HIPOTESIS FORMULADA!!!!!!!!!!!!!!!
-
-Para confirmar cual de los dos muestra las características de insesgamiento y eficiencia relativa buscaremos su varianza y cual de ellos mediante el estimador de la media logra estimar de mejor manera y más acertada el parámetro poblacional, que en este caso es 5.
+Para confirmar cual de los 4 muestra las características de insesgamiento y eficiencia relativa buscaremos su varianza y cual de ellos mediante el estimador de la media logra estimar de mejor manera y más acertada el parámetro poblacional, que en este caso es 5.
 
 ```{r}
 #Medias del estimador c) y d) respectivamente.
+meanB_beta_moño <- mean(B_moño)
+meanB_beta_v <- mean(B_beta_v)
 meanB_beta_u <-  mean(B_beta_u)
 meanB_beta_2mco <- mean(B_beta_2mco)
-MEDIAS <- rbind(meanB_beta_u,meanB_beta_2mco)
+MEDIAS <- rbind(meanB_beta_u,meanB_beta_2mco,meanB_beta_moño,meanB_beta_v)
 colnames(MEDIAS) <- c("media")
 
 #Varianza de los estimadores c) y d) respectivamente.
+var_betamoño <- sum((B_moño-meanB_beta_moño)^2)/(N-1)
+var_betav <- sum((B_beta_v-meanB_beta_v)^2)/(N-1)
 var_betau <- sum((B_beta_u-meanB_beta_u)^2)/(N-1)
 var_betamco2 <- sum((B_beta_2mco-meanB_beta_2mco)^2)/(N-1)
-VARIANZAS <- rbind(var_betau,var_betamco2)
+
+
+VARIANZAS <- rbind(var_betau,var_betamco2,var_betamoño,var_betav)
 colnames(VARIANZAS) <- c("varianza")
 MEDIAS
 VARIANZAS
 ```
-Teniendo lo siguiente podemos comprobar la hipótesis anteriormente planteada, ya que, el estimador d) es decir, el de MCO, es el estimador insesgado y de mínima varianza de los estimadores anteriormente planteados.
+Teniendo que 3 estimadores por medio del estimador de la media se acercan al parámetro poblacional quiere decir que los 3 pueden ser insesgados, sin embargo, veremos cual es el más eficiente relativamente entre los dos de menor varianza los cuales son beta^u y el beta de MCO.
+```{r}
+first<- (var_betau-var_betamco2)
+second <- (var_betamco2-var_betau)
+first
+second
+```
+
+Teniendo lo siguiente podemos comprobar la hipótesis anteriormente planteada, ya que, encontramos que 3 de los estimadores estiman mediante la media valores cercanos a 5 (parámetro poblacional) siendo el Beta de MCO el que la estima con la menor diferencia. Por otro lado el de MCO presenta una variabilidad mayor a la de los otros 2 estimadores potencialmente superiores, concluyendo con que el beta U es aquel relativamente más eficiente y el MCO el insesgado.
 
 
 
