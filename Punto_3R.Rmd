@@ -22,15 +22,22 @@ Para la extracción de los datos, vamos a utilizar la base de datos wber, proven
   - Seleccionar 2 tipos de marcas:
       - BUDWEISER BEER
       - BUDWEISER LIGHT BEER
+```{r,warning=FALSE}
+#intalacion de las librerías necesarias
+
+library(dplyr)
+library(tidyverse)
+```
+
+
 
 ```{r}
 datos_cervezas <- read.csv(file.choose())
 ```
 
 ```{r}
-beer <- filter(datos_cervezas,STORE==109,("MOVE">0 & PRICE>0),(UPC==1820000016|UPC==1820000106))
-#set.seed(22)
-#beer <- beer[ sample(nrow(beer),size = 300,replace = FALSE),]
+beer <- filter(datos_cervezas,STORE==109,(MOVE>0& PRICE>0),(UPC==1820000016|UPC==1820000106))
+
 ```
 
 ```{r}
