@@ -305,7 +305,7 @@ R2ADJ(y = y,e_gorro = e_gorro1,n = n,k = k)
 
 ## Modelo Log - Lin
 
-Por otro lado, tenemos el modelo LOg-lin en donde únicamente aplicamos una transformación logarítmica  a la variable del consumo, una vez calculado el R^2 ajustado notamos que el modelo explica en       la variabilidad del consumo, cabe resaltar que antes de calcular el consumo estimado para el cálculo de los errores se aplica exponente a logaritmo del consumo para dejarlo en términos lineales. 
+Por otro lado, tenemos el modelo LOg-lin en donde únicamente aplicamos una transformación logarítmica  a la variable del consumo, una vez calculado el R^2 ajustado notamos que el modelo explica en *0.261878*  la variabilidad del consumo, cabe resaltar que antes de calcular el consumo estimado para el cálculo de los errores se aplica exponente al logaritmo del consumo para dejarlo en términos lineales. 
 
 ```{r}
 y <- as.matrix(beer$unidades)
@@ -317,6 +317,16 @@ R2ADJ(y = y,e_gorro = e_gorro2,n = n,k = k)
 
 ## Modelo Log - Log
 
+Finalmente, procedemos a calcular el R^2 ajustado del modelo Log - Log, el cual nos dice que dicho modelo explica en 0.2598559 la variabilidad del consumo, cabe resaltar nuevamente que antes de calcular el consumo estimado para el cálculo de los errores se aplica exponente al logaritmo del consumo para dejarlo en términos lineales. 
+
+```{r}
+y <- as.matrix(beer$unidades)
+x <- as.matrix(cbind(1,beer$precio,beer$marca))
+
+R2ADJ(y = y,e_gorro = e_gorro3,n = n,k = k)
+
+```
+Teniendo en cuenta 
 # Teorema de Frisch-Waugh.
 
 # Distancia de Cook
