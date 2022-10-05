@@ -1,0 +1,253 @@
+---
+title: "Dominick's Finer Foods"
+author: "Duvan Santiago Castro - Miguel Ángel Malagón"
+date: '2022-10-04'
+output: word_document
+---
+
+# Introducción
+
+A lo largo de las siguientes secciones encontrará los diferentes modelos estimados y sus resultados correspondientes, que permitirá entender la demanda de cerveza de la cadena de restaurantes Dominick’s Finer Foods (DFF). Para dicha interpretación nos centraremos en 2 tipos de cervezas con sus respectivos precios.
+
+Inicialmente realizaremos una serie de filtros que nos permitan seleccionar una muestra de 200 observaciones para el desarrollo de los modelos. 
+
+
+# Primeros pasos - Alistamiento datos 
+
+Para la extracción de los datos, vamos a utilizar la base de datos wber, provenientes de (DFF) y les aplicaremos los siguientes filtros:
+
+  - Store = 109: Nos centraremos en la tienda 109
+  - Precio > 0
+  - Unidades > 0
+  - Seleccionar 2 tipos de marcas:
+      - BUDWEISER BEER
+      - BUDWEISER LIGHT BEER
+
+```{r}
+datos_cervezas <- read.csv(file.choose())
+```
+
+```{r}
+beer <- filter(datos_cervezas,STORE==109,("MOVE">0 & PRICE>0),(UPC==1820000016|UPC==1820000106))
+#set.seed(22)
+#beer <- beer[ sample(nrow(beer),size = 300,replace = FALSE),]
+```
+
+```{r}
+# Cambio los datos 
+
+beer$UPC <- replace(beer$UPC, beer$UPC==1820000016, 0)
+beer$UPC <- replace(beer$UPC, beer$UPC==1820000106, 1)
+
+# Seleccionar las variables necesarias 
+
+beer <- select(beer,unidades="MOVE",precio="PRICE",marca="UPC")
+head(beer)
+```
+
+una vez realizados los filtros necesarios, hacemos un cambio los tipos de datos con el fin de establecer el siguiente modelo:
+
+$$
+
+Demanda=\beta_{0}+\beta_{1}precio+\beta_{2}marca\\
+\mbox{donde} \quad marca:=\text{Es una variable Dummy:}\\
+\mbox{sí}:marca=0:\text{Budweiser beer} \quad marca=1:\text{Budweiser light beer}
+
+$$
+
+
+# Modelo - Estimación 
+
+Para la estimación  del modelo planteado anteriormente vamos se define un vector para la demanda que representa la cantidad de unidades vendidas de cada producto, así mismo, se define una matriz de diseño que contiene, una columna de unos asociada al intercepto, otra columna de precios y tipo de marca definida como una variable Dummy.
+
+En los siguientes apartados vamos a regresar diferentes modelos con el fin de revisar cual de los 3 ( Lin - Lin), (log -log) o (Log -Lig) se ajusta mejor a los datos.
+
+
+## Modelo Lin - Lin
+
+El primer modelo que vamos a revisar es un modelo lineal de forma matricial.
+
+$$
+Y=X\beta+e\\
+\mbox{Donde} \quad Y=\text{Unidades por producto} \quad X=\text{Matriz diseño}\\
+\quad\\
+
+$$
+Una vez realizada la estimación, los coeficientes asociados al modelo principal previamente mencionado, son los siguientes:
+
+
+```{r}
+y <- as.matrix(beer$unidades)
+x <- as.matrix(cbind(1,beer$precio,beer$marca))
+colnames(x) <-c("b0","precio","marca") 
+betas <- (solve(t(x)%*%x)%*%t(x)%*%y)
+betas
+```
+quedando de esta manera el siguiente modelo:
+
+$$
+\widehat{demanda}=59,33-12,90*Precio-3.16*Marca
+
+$$
+*Análisis:*
+  - La demanda de Cervezas de la tienda 109 cuyas variables precio y marca, muestran una serie de comportamientos donde por un aumento el precio de 1und, la demanda disminuye 12,90 y cuando es 1  es decir "Budweiser beer", la demanda se reduce un -3,16. de otro modo es cero.
+
+
+## Modelo Log - Lin
+
+Ahora vamos a plantear un modelo Log-Lin y revisaremos los coeficientes asociados a cada variable explicativa de la demnada de cervezas de la tienda 109 de (DFF)
+
+$$
+ln(consumo)=\beta_{0}+\beta_{1}precio+\beta_{2}marca+e\\
+
+$$
+Dado que estamos trabajando las regresiones de forma matricial, antes de correr la regresión la variable consumo, representada en unidades vendidas se le hace una tranformación logaritmica y luego si se corre la respectiva regresión.
+
+
+
+```{r}
+y <- as.matrix(beer$unidades)
+x <- as.matrix(cbind(1,beer$precio,beer$marca))
+colnames(x) <-c("b0","precio","marca") 
+lny <- log(y)
+betas2 <- (solve(t(x)%*%x)%*%t(x)%*%lny)
+betas2
+```
+interpretación:
+
+
+## Modelo Log - Log
+
+
+Ahora vamos a plantear un modelo Log-Log en donde nos aplicaremos una transformación logaritmica a los precios, pero no la a la variable dummmy dado que el log(0) no existe, por lo tanto sera un modelo log-log en el par de conusmo y precio, como se muestra en el siguiente planteamiento. 
+
+$$
+ln(consumo)=\beta_{0}+\beta_{1}ln(precio)+\beta_{2}marca+e\\
+
+$$
+Dado que las regresiones se estan trabajando de manera matricial, la matriz de diseño X y la matriz de Y "Consumo" se trabajaria de la siguiente manera:
+$$
+\mbox{con} \quad X=\begin{pmatrix}
+1 & ln(precio_{1}) & marca_{1}\\
+1 & ln(precio_{2}) & marca_{2}\\
+1 & ln(precio_{3}) & marca_{3}\\
+\vdots & \vdots & \vdots\\
+1 & ln(precio_{N}) & marca_{N}\\
+\end{pmatrix}, \quad Y=\begin{pmatrix}
+ln(cons_{1})\\
+ln(cons_{2})\\
+\vdots\\
+\ln(cons_{N})
+\end{pmatrix}
+
+$$
+Una vez realizamos la regresión, nos da los siguientes coeficientes asociados a cada variable.
+
+```{r}
+y <- as.matrix(beer$unidades)
+logx <- as.matrix(cbind(1,log(beer$precio),beer$marca))
+colnames(x) <-c("b0","precio","marca") 
+lny <- log(y)
+
+betas3 <- (solve(t(logx)%*%logx)%*%t(logx)%*%lny)
+betas3
+```
+Interpretación:
+
+
+
+# Matriz de Varianza Covarianza para los estimadores
+
+Teniendo en cuenta lo anterior, notamos que hay diferentes interpretaciones para cada modelo, pero seria conveniente también conocer la variación de dichos coeficientes para cada modelo, por esta razón vamos a calcular la matriz de varianzas-covarianzas para los diferentes estimadores de cada modelo, para eso utilizaremos la siguiente formula:
+
+$$
+\widehat{var-cov(\hat\beta)}=\hat\sigma^2(X^tX)\\
+\quad\\
+\mbox{donde,} \quad \hat\sigma^2=\frac{\hat{e}^t\hat{e}}{T-K} \quad T=observaciones,\quad K=parámetros
+
+$$
+Teniendo en cuenta que la estimación de la varianza se realiza apartir de los errores estimados, en cada modelo vamos a realizar dicho procedimiento para ajustarlo al tipo de modelo.
+
+## Modelo Lin - Lin
+
+Antes de calcular la matriz de varianza covarianza vamos a estimar los errores 
+
+$$
+\hat{e}=Y-\hat{Y}
+$$
+```{r}
+y <- as.matrix(beer$unidades)
+x <- as.matrix(cbind(1,beer$precio,beer$marca))
+colnames(x) <-c("b0","precio","marca") 
+betas <- (solve(t(x)%*%x)%*%t(x)%*%y)
+y_gorro <- x%*%betas
+e_gorro1 <- y-y_gorro
+
+# Calcular sigma^2
+t <- as.numeric(nrow(y))
+k <- as.numeric(ncol(x))
+var1 <- as.numeric((t(e_gorro1)%*%e_gorro1)/(t-k))
+var1
+
+```
+Una vez que tenemos calcula la varianza estimada, vamos a calcular nuestra matriz var_cov
+
+```{r}
+x <- as.matrix(cbind(1,beer$precio,beer$marca))
+var_cov1 <- var1*(solve(t(x)%*%x))
+var_cov1
+```
+
+
+## Modelo Log - Lin
+
+Ahora tenermos que tener encuenta que tipo de modelo estamos estimando para así poder contruir nuestra matriz de var-cov, en donde a diferencia del anterior modelo, tenemos que hacer la siguiente modificación:
+$$
+ln(consumo)=\beta_{0}+\beta_{1}precio+\beta_{2}marca\\
+\widehat{ln(consumo)}=X\hat{\beta} \quad \implies
+\widehat{consumo}=e^{\widehat{ln(consumo)}}
+$$
+```{r}
+y <- as.matrix(beer$unidades)
+x <- as.matrix(cbind(1,beer$precio,beer$marca))
+colnames(x) <-c("b0","precio","marca") 
+lny <- log(y)
+betas2 <- (solve(t(x)%*%x)%*%t(x)%*%lny)
+
+log_y_gorro2 <- x%*%betas
+y_gorro2 <- exp(log_y_gorro2)
+e_gorro2 <- y-y_gorro2
+
+# Calcular sigma^2
+t <- as.numeric(nrow(y))
+k <- as.numeric(ncol(x))
+var2 <- as.numeric((t(e_gorro2)%*%e_gorro2)/(t-k))
+var2
+```
+```{r}
+x <- as.matrix(cbind(1,beer$precio,beer$marca))
+var_cov2 <- var2*(solve(t(x)%*%x))
+var_cov2
+```
+
+## Modelo Log - Log
+
+
+
+
+
+# R ajustado de cada especificación 
+
+
+## Modelo Lin - Lin
+
+## Modelo Log - Lin
+
+## Modelo Log - Log
+
+# Teorema de Frisch-Waugh.
+
+# Distancia de Cook
+
+
+# Pronóstico 
