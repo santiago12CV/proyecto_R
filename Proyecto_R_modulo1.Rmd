@@ -149,6 +149,7 @@ Una vez generados los valores de las perturbaciones y de las variables explicati
 $$
 \ y_i=5x_i +e_i
 $$
+
 ```{r}
 #Según el modelo se generan los datos de Y_i.
 yi <- 5*xi + e
@@ -234,7 +235,7 @@ colnames(VARIANZAS) <- c("varianza")
 MEDIAS
 VARIANZAS
 ```
-Teniendo lo siguiente podemos comprobar la hipotesis anteriormente planteada, ya que, el estimador d) es decir, el de MCO, es el estimador insesgado y de mínima varianza de los estimadores anteriormente planteados.
+Teniendo lo siguiente podemos comprobar la hipótesis anteriormente planteada, ya que, el estimador d) es decir, el de MCO, es el estimador insesgado y de mínima varianza de los estimadores anteriormente planteados.
 
 
 
