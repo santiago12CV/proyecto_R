@@ -268,13 +268,52 @@ var_cov3
 
 # R ajustado de cada especificación 
 
-Hasta el momento hemos realizado la estimación de los diferentes modelos, nos centramos en conocer sus diferentes matrices de varianzas - Covarianzas, pero no hemos revisado que tanto las variables explicativas, explican la variabilidad del consumo de cervezas para las marcas seleccionadas, para conocer 
+Hasta el momento hemos realizado la estimación de los diferentes modelos, nos centramos en conocer sus diferentes matrices de varianzas - Covarianzas, pero no hemos revisado que tanto las variables explicativas, explican la variabilidad del consumo de cervezas para las marcas seleccionadas.
+
+Para conocer dicha que tan ajustado es del modelo en términos de variabilidad utilizaremos el R^2 ajustado con la siguiente formula:
+
+$$
+R_{ajustado}^2=1-(1-R^2)*(\frac{n-1}{n-k-1})\\
+\mbox{donde,} \quad R^2=1-\frac{\sum_{t=1}^Ne_{t}^2}{\sum_{t=1}^N(Y_t-\bar{Y})^2}
+
+$$
+Dado que tenemos diferentes modelo vamos a calcularlo para cada uno de ellos.
+
+```{r}
+R2ADJ <- function(y,e_gorro,n,k,R22){
+  y <- as.matrix(y)
+  e_gorro <- as.matrix(e_gorro)
+  mean_y <- sum(y)/length(y)
+  R_2 <- 1- (sum((e_gorro)^2)/(sum((y-mean_y)^2)))
+  R2ADJ <- 1-(((n-1)/(n-k-1))*(1-R_2)) 
+  return(R2ADJ)
+}
+n <- nrow(beer)
+k <- ncol(x)
+```
 
 ## Modelo Lin - Lin
 
+El primer modelo que vamos a revisar es el de Lin-Lin en donde podemos evidenciar que la variabilidad del modelo explica en 0.3033 la variabilidad del consumo. 
 
+```{r}
+y <- as.matrix(beer$unidades)
+x <- as.matrix(cbind(1,beer$precio,beer$marca))
+R2ADJ(y = y,e_gorro = e_gorro1,n = n,k = k)
+
+```
 
 ## Modelo Log - Lin
+
+Por otro lado, tenemos el modelo LOg-lin en donde únicamente aplicamos una transformación logarítmica  a la variable del consumo, una vez calculado el R^2 ajustado notamos que el modelo explica en       la variabilidad del consumo, cabe resaltar que antes de calcular el consumo estimado para el cálculo de los errores se aplica exponente a logaritmo del consumo para dejarlo en términos lineales. 
+
+```{r}
+y <- as.matrix(beer$unidades)
+x <- as.matrix(cbind(1,beer$precio,beer$marca))
+
+R2ADJ(y = y,e_gorro = e_gorro2,n = n,k = k)
+
+```
 
 ## Modelo Log - Log
 
