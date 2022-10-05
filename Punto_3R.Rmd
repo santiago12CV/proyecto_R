@@ -221,7 +221,7 @@ colnames(x) <-c("b0","precio","marca")
 lny <- log(y)
 betas2 <- (solve(t(x)%*%x)%*%t(x)%*%lny)
 
-log_y_gorro2 <- x%*%betas
+log_y_gorro2 <- x%*%betas2
 y_gorro2 <- exp(log_y_gorro2)
 e_gorro2 <- y-y_gorro2
 
@@ -240,13 +240,39 @@ var_cov2
 ## Modelo Log - Log
 
 
+```{r}
+y <- as.matrix(beer$unidades)
+logx <- as.matrix(cbind(1,log(beer$precio),beer$marca))
+colnames(x) <-c("b0","precio","marca") 
+lny <- log(y)
 
+betas3 <- (solve(t(logx)%*%logx)%*%t(logx)%*%lny)
+
+log_y_gorro3 <- logx%*%betas3
+y_gorro3 <- exp(log_y_gorro3)
+e_gorro3 <- y-y_gorro3
+
+# Calcular sigma^2
+t <- as.numeric(nrow(y))
+k <- as.numeric(ncol(x))
+var3 <- as.numeric((t(e_gorro3)%*%e_gorro3)/(t-k))
+var3
+```
+```{r}
+logx <- as.matrix(cbind(1,log(beer$precio),beer$marca))
+var_cov3 <- var3*(solve(t(logx)%*%logx))
+var_cov3
+
+```
 
 
 # R ajustado de cada especificación 
 
+Hasta el momento hemos realizado la estimación de los diferentes modelos, nos centramos en conocer sus diferentes matrices de varianzas - Covarianzas, pero no hemos revisado que tanto las variables explicativas, explican la variabilidad del consumo de cervezas para las marcas seleccionadas, para conocer 
 
 ## Modelo Lin - Lin
+
+
 
 ## Modelo Log - Lin
 
