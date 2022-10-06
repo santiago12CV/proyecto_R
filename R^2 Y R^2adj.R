@@ -80,10 +80,16 @@ R2(y=C,e_gorro= egorro)
 R2(y=Y,egorro=egorro)
 R2
 
-R2ADJ <- function(n,k,R22){
-  R2ADJ_ <- 1-(((n-1)/(n-k-1))*(1-R22)) 
-  print(R2ADJ_)
+R2ADJ <- function(y,e_gorro,n,k,R22){
+  y <- as.matrix(y)
+  e_gorro <- as.matrix(e_gorro)
+  mean_y <- sum(y)/length(y)
+  R_2 <- 1- (sum((e_gorro)^2)/(sum((y-mean_y)^2)))
+  R2ADJ <- 1-(((n-1)/(n-k-1))*(1-R_2)) 
+  return(R2ADJ)
 }
+
+
 R2ADJ(n=N,2,R2=R2)
 
 

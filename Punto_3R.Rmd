@@ -2,7 +2,9 @@
 title: "Dominick's Finer Foods"
 author: "Duvan Santiago Castro - Miguel Ángel Malagón"
 date: '2022-10-04'
-output: word_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 # Introducción
@@ -134,18 +136,7 @@ ln(consumo)=\beta_{0}+\beta_{1}ln(precio)+\beta_{2}marca+e\\
 $$
 Dado que las regresiones se estan trabajando de manera matricial, la matriz de diseño X y la matriz de Y "Consumo" se trabajaria de la siguiente manera:
 $$
-\mbox{con} \quad X=\begin{pmatrix}
-1 & ln(precio_{1}) & marca_{1}\\
-1 & ln(precio_{2}) & marca_{2}\\
-1 & ln(precio_{3}) & marca_{3}\\
-\vdots & \vdots & \vdots\\
-1 & ln(precio_{N}) & marca_{N}\\
-\end{pmatrix}, \quad Y=\begin{pmatrix}
-ln(cons_{1})\\
-ln(cons_{2})\\
-\vdots\\
-\ln(cons_{N})
-\end{pmatrix}
+
 
 $$
 Una vez realizamos la regresión, nos da los siguientes coeficientes asociados a cada variable.
@@ -326,10 +317,77 @@ x <- as.matrix(cbind(1,beer$precio,beer$marca))
 R2ADJ(y = y,e_gorro = e_gorro3,n = n,k = k)
 
 ```
-Teniendo en cuenta 
-# Teorema de Frisch-Waugh.
+Teniendo en cuenta los resultados anteriores, podemos evidenciar que el modelo que mejor explica la variabilidad del consumo, es el modelo Lin - Lin.
+
 
 # Distancia de Cook
 
+Aunque la muestra es representativa y aleatoria, pueden existir valores que afecten el cálculo de los betas, por esta razón vamos a utilizar el teorema de Cook o distancia de cook, que nos mide la influencia de un dato (i) sobre los coeficientes.
+
+$$
+D_{i}=\frac{(\hat{\beta_{i}}-\hat{\beta})^tX^tX(\hat{\beta_{i}}-\hat{\beta})}{K*MCE}\\
+\mbox{Donde,} \quad MCE=\frac{1}{T-K}\sum_{t=1}^T(y_t-\hat{y_t})^2
+
+$$
+
+
+```{r}
+cook <- function(y,x){
+  
+  x <- as.matrix(x)
+  y <- as.matrix(y)
+  coefi <- solve(t(x)%*%x)%*%t(x)%*%y
+  distancia <- c()
+  t <- length(y)
+  y_gorro <- x%*%coefi
+  k <- ncol(x)
+  MCE <- ((1/t-k)*sum((y-y_gorro)^2))
+  
+  for (i in 1:n) {
+
+    xc <- x[-i,]
+    yc <- y[-i,]
+    coefi2 <- solve(t(xc)%*%xc)%*%t(xc)%*%yc
+    distancia[i] <- (t((coefi2-coefi))%*%t(x)%*%x%*%(coefi2-coefi))/(k*MCE)
+    xc <- x
+    yc <- y 
+  }
+  
+  tabla <- cbind(y,x,distancia)
+  return(head(tabla))
+  
+}
+y <- as.matrix(beer$unidades)
+x <- as.matrix(cbind(1,beer$precio,beer$marca))
+cook(y =y,x = x)
+
+```
+
+Una vez que calculamos las diferentes distancias para cada observación, se revisa a través de un filtro las distancias mayores a uno, en donde nos dio que ningún dato es mayor a uno, por lo tanto los datos que tenemos no son influyentes a la hora de estimar los betas. 
+
 
 # Pronóstico 
+
+Finalmente a través de nuestro modelo Lin-Lin vamos pronosticar la demanda que se tendrían con un precio de 2/3, sin embargo debemos tener en cuenta que la otra variable que explica la demanda es un avariable Dummy con la marca de cerveza en donde: 
+
+$$
+marca=0:\text{Budweiser beer} \\\quad marca=1:\text{Budweiser light beer}
+$$
+$$
+\widehat{demanda}=59,33-12,90*Precio-3.16*Marca\\
+\mbox{si: Precio =2/3 & Marca=0}\\
+\quad\\
+\widehat{demanda}=59,33-12,90*(2/3)-3.16*(0)\\
+\widehat{demanda}=50.73\\
+\quad\\
+\mbox{si: Precio =2/3 & Marca=1}\\
+\widehat{demanda}=59,33-12,90*(2/3)-3.16*(1)\\
+\widehat{demanda}=47.57\\
+
+
+$$
+
+
+A lo que podemos concluir que ante un precio alto la demanda disminuye cuando se trata de la cerveza tipo Budweiser light beer, a diferencia de la otra cerveza.
+
+
